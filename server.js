@@ -90,7 +90,7 @@ app.get("/diagnostic",
 function getQueueMessageCount(url, retVal, itemName, callback){
   if (!url){ return callback(null, retVal); }
   message = {
-    QueueUrl: url, 
+    QueueUrl: url,
     AttributeNames: [ 'ApproximateNumberOfMessages' ]
   };
   var sqs = new AWS.SQS();
@@ -128,10 +128,10 @@ app.get("/messageCount",
           done(err, data);
         }
       }
-    );  
+    );
   }
 );
-  
+
 
 // short cut to sending a specific (/bottle/ping) message
 app.get("/ping",
@@ -152,20 +152,20 @@ app.get("/ping",
     );
     lastPingSentAt = new Date();
   }
-); 
+);
 
 app.get("/ping/lastReceived", function(req, res){
   returnBasedOnLastMessageAge(res);
 });
 
-app.get("/ping/currentSequenceNumber", 
+app.get("/ping/currentSequenceNumber",
   function(req, res){
     res.send({currentSequenceNumber: pingSequenceNumber, sent:lastPingSentAt});
 });
 
 app.post("/ping/receive",
   function(req, res) {
-    var message = req.body;  
+    var message = req.body;
     log.debug("processing message: type %s %j", typeof(message),  message);
     if ( !message ){
       res.status(500).send({error:"No message found in request"});
@@ -187,12 +187,12 @@ app.post("/ping/receive",
 // if it has received ping messages with those sequence numbers
 app.post("/ping/didYouGetThese",
   function(req, res){
-    var sequenceList = req.body;  
+    var sequenceList = req.body;
     var matchingReceivedMessages = [];
     if ( !sequenceList || !_.isArray(sequenceList) || sequenceList.length === 0){
       res.status(500).send({error:"No sequence list found in request"});
       return;
-    } 
+    }
     function findForSequenceNumber(number){
       return function(message) { return message.sequence === number; };
     }
@@ -200,7 +200,7 @@ app.post("/ping/didYouGetThese",
       var findThisSequenceNumber = sequenceList[i];
       var gotIt = _.find(receivedPings, findForSequenceNumber(findThisSequenceNumber));
       if (gotIt === undefined){
-        res.status(500).send({error:"Missing message", sequenceNumber: findThisSequenceNumber}); 
+        res.status(500).send({error:"Missing message", sequenceNumber: findThisSequenceNumber});
         return;
       } else {
         matchingReceivedMessages.push(gotIt);
@@ -211,7 +211,7 @@ app.post("/ping/didYouGetThese",
 );
 
 app.post("/ping/clearReceived",
-  function(req, res){ 
+  function(req, res){
     receivedPings = [];
     res.send({message:"ok"});
   }
@@ -246,6 +246,7 @@ app.post("/send", function(req, res){
     if ( typeof(req.body.deliveryDelaySeconds) == "number" ) {
       delaySeconds = req.body.deliveryDelaySeconds;
     }
+    console.log(`Delay Seconds: ${delaySeconds}`);
     sendMessage(res, delaySeconds, JSON.stringify(req.body));
   }
 });
